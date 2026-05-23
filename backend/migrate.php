@@ -1,7 +1,10 @@
 <?php
+require_once __DIR__ . "/db.php";
 
 $files = glob(__DIR__ . "/migrations/*.php");
 
 foreach ($files as $file) {
-    require_once $file;
+    $sql = require $file;
+    $conn->exec($sql);
+    echo basename($file) . " migrated successfully\n";
 }

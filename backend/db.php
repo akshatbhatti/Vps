@@ -1,8 +1,10 @@
 <?php
-$servername = "localhost";
-$username = "username";
-$password = "password";
-$dbname = "mydb";
+require_once __DIR__ . "/config/env.php";
+
+$servername = $_ENV['servername'];
+$username = $_ENV['username'];
+$password = $_ENV['password'] ;
+$dbname = $_ENV['db_name'];
 
 try {
   $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
