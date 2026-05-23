@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PHP CRUD Frontend</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f5f5f5;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    input,
+    textarea,
+    button {
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    button {
+      background: black;
+      color: white;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table th,
+    table td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+
+    table th {
+      background: #111;
+      color: white;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .edit-btn {
+      background: orange;
+    }
+
+    .delete-btn {
+      background: crimson;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>PHP CRUD Frontend</h1>
+
+    <form id="userForm">
+      <input type="hidden" id="userId" />
+
+      <input type="email" id="email" placeholder="Enter Email" required />
+
+      <input type="text" id="username" placeholder="Enter Username" required />
+
+      <textarea id="message" placeholder="Enter Message" required></textarea>
+
+      <button type="submit">Save User</button>
+    </form>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Email</th>
+          <th>Username</th>
+          <th>Message</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody id="usersTable"></tbody>
+    </table>
+  </div>
+
+  <script>
+
+    const API_URL = 'http://localhost:8000/apis/users.php';
+
+    const form = document.getElementById('userForm');
+    const usersTable = document.getElementById('usersTable');
+
+
+    async function fetchUsers() {
+
+      const response = await fetch(API_URL);
+      const users = await response.json();
+
+      usersTable.innerHTML = '';
+
+      users.forEach(user => {
+
+        usersTable.innerHTML += `
+          <tr>
+            <td>${user.id}</td>
+            <td>${user.email}</td>
+            <td>${user.username}</td>
+            <td>${user.message}</td>
+            <td>
+              <div class="actions">
+                <button class="edit-btn" onclick='editUser(${JSON.stringify(user)})'>Edit</button>
+                <button class="delete-btn" onclick='deleteUser(${user.id})'>Delete</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const id = document.getElementById('userId').value;
+
+      const data = {
+        email: document.getElementById('email').value,
+        username: document.getElementById('username').value,
+        message: document.getElementById('message').value
+      };
+
+
+      if (id) {
+
+        data.id = id;
+
+        await fetch(API_URL, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+      } else {
+
+        await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+      }
+
+      form.reset();
+      document.getElementById('userId').value = '';
+
+      fetchUsers();
+    });
+
+
+    function editUser(user) {
+
+      document.getElementById('userId').value = user.id;
+      document.getElementById('email').value = user.email;
+      document.getElementById('username').value = user.username;
+      document.getElementById('message').value = user.message;
+    }
+
+
+    async function deleteUser(id) {
+
+      await fetch(API_URL, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id })
+      });
+
+      fetchUsers();
+    }
+
+
+    fetchUsers();
+
+  </script>
+</body>
+</html>
